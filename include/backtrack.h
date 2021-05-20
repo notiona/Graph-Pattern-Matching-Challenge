@@ -17,6 +17,7 @@ class Backtrack {
 
   void PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs);
   void printEmbedding(const std::vector<Vertex> &embedding);
+  bool isEmbedding(const std::vector<Vertex> &embedding, const Graph &data, const Graph &query);
 };
 
 #endif  // BACKTRACK_H_
