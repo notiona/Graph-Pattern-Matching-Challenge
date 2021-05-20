@@ -14,7 +14,7 @@ mkdir build
 cd build
 cmake ..
 make
-./main/program ../data/exdata.igraph ../query/exdata.igraph ../candidate_set/excandidate.cs
+./main/program ../data/exdata.igraph ../query/exquery.igraph ../candidate_set/excandidate.cs
 ```
 
 ### executable program that outputs a candidate set
