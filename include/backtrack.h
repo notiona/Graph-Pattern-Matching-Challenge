@@ -43,8 +43,8 @@ class Backtrack {
  */
 inline void Backtrack::initVisited(size_t n){
   visited = new bool[n];
-  for(int i=0; i<n; ++i){
-    visited[i]=false;
+  for(size_t i = 0; i < n; ++i){
+    visited[i] = false;
   }
 }
 

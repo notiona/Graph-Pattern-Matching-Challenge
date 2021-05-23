@@ -108,7 +108,7 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   double size_C_ini = C_ini(G, q, 0);
   double min = deg / size_C_ini;
   Vertex min_idx = 0;
-  for(int u=1; u < q_size; ++u){
+  for(size_t u = 1; u < q_size; ++u){
     deg = q.GetDegree(u);
     size_C_ini = C_ini(G, q, u);
     double val = deg / size_C_ini;
@@ -131,16 +131,16 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   std::queue<int> queue;
   queue.push(root);
 
-  for(int i=q.GetNeighborStartOffset(root); i<q.GetNeighborEndOffset(root); ++i){
+  for(size_t i = q.GetNeighborStartOffset(root); i < q.GetNeighborEndOffset(root); ++i){
     Vertex v = q.GetNeighbor(i); // vertex v adjacent to u
     q_D[root].push_back(v);
     }
   Vertex cnt = 0;
   while(!queue.empty()){
     Vertex u = queue.front(); queue.pop();
-    for(int i=q.GetNeighborStartOffset(u); i<q.GetNeighborEndOffset(u); ++i){
+    for(size_t i = q.GetNeighborStartOffset(u); i < q.GetNeighborEndOffset(u); ++i){
       Vertex v = q.GetNeighbor(i);
-      if (visited[v]==false) {
+      if (visited[v] == false) {
         visited[v] = true;
         queue.push(v);
         visit_order[v] = ++cnt;
@@ -149,9 +149,9 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   }
 
   // Direct all edges from earlier to later visited vertices.
-  for(Vertex u=0; u < q_size; ++u){
-    if(u!=root){
-      for(int i=q.GetNeighborStartOffset(u); i < q.GetNeighborEndOffset(u); ++i){
+  for(Vertex u = 0; u < static_cast<Vertex>(q_size); ++u){
+    if(u != root){
+      for(size_t i = q.GetNeighborStartOffset(u); i < q.GetNeighborEndOffset(u); ++i){
         Vertex v = q.GetNeighbor(i);
         if(visit_order[u] < visit_order[v]){
           q_D[u].push_back(v);
@@ -182,8 +182,8 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
  */
 int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
   int cnt = 0;
-  for(int v=0; v < G.GetNumVertices(); ++v){ 
-    if (G.GetLabel(v)==q.GetLabel(v) && G.GetDegree(v)>=q.GetDegree(u)){
+  for(size_t v=0; v < G.GetNumVertices(); ++v){ 
+    if (G.GetLabel(v) == q.GetLabel(v) && G.GetDegree(v) >= q.GetDegree(u)){
       ++cnt;
     }
   }
@@ -203,7 +203,7 @@ void Backtrack::backtracking(const CandidateSet &cs){
     // do printEmbedding()
   }
   else if (sizeof(M)==0){
-    for(size_t i=0; i<cs.GetCandidateSize(root); ++i){
+    for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
       // do M <- (root, v); 
       visited[v] = true;
@@ -214,7 +214,7 @@ void Backtrack::backtracking(const CandidateSet &cs){
   }
   else{
     Vertex u = extendable();
-      for(size_t j=0; j < sizeof(C_m(u)); ++j){
+      for(size_t j = 0; j < sizeof(C_m(u)); ++j){
         Vertex v = C_m(u)[j];
         if (!visited[v]){
           // do M' <- M U (u,v);
