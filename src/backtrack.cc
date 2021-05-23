@@ -256,10 +256,33 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
  * @author Jinhyeong Kim
  */
 Vertex Backtrack::extendable(){
- // return a extendable vertex
- // (아래는 단지 에러 일으키지 않기 위해 넣은 것)
- Vertex tmp = 0;
- return tmp;
+  // return a extendable vertex
+  // (아래는 단지 에러 일으키지 않기 위해 넣은 것)
+  // unvisited query vertex u is extendable if all parents of u are matched in M 
+  std::vector <Vertex> unvisited;
+  for(size_t i = 0; i < q_size; i++) {
+    if(visited[i]) {
+      unvisited.push_back(i);
+    }
+  }
+  std::vector <Vertex> extendable_vector;
+  for (auto it = unvisited.begin(); it != unvisited.end(); ++it) {
+    size_t unvisitied_vertex = *it;
+    // parent 있는지 확인 위해 q_D_1 필요
+    // if all unvisited_vertex's parents are matched in M
+    // extendable_vector.push_back(unvisited_vertex)
+  }
+  // extendable vertex 중 C_m(u)가 최소인 vertex 선택
+  size_t min = SIZE_MAX;
+  //for (auto it = extendable_vector.begin(); it != extendable_vector.end(); ++it) {
+    //size_t extendable_vertex = *it;
+    // size_t C_m_value = C_m(extendable_vertex);
+    // if (min > C_m_value)
+    // min = C_m_value;
+  //}
+  
+  Vertex u = min;  
+  return u;
 }
 
 /**
