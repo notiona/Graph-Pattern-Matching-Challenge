@@ -278,7 +278,6 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
  */
 Vertex Backtrack::extendable(){
   // return a extendable vertex
-  // (아래는 단지 에러 일으키지 않기 위해 넣은 것)
   // unvisited query vertex u is extendable if all parents of u are matched in M 
   std::vector <Vertex> unvisited;
   for(size_t i = 0; i < q_size; i++) {
@@ -288,20 +287,31 @@ Vertex Backtrack::extendable(){
   }
   std::vector <Vertex> extendable_vector;
   for (auto it = unvisited.begin(); it != unvisited.end(); ++it) {
-    size_t unvisitied_vertex = *it;
+    size_t unvisited_vertex = *it;
     // parent 있는지 확인 위해 q_D_1 필요
-    // if all unvisited_vertex's parents are matched in M
-    // extendable_vector.push_back(unvisited_vertex)
+    std::vector<Vertex> M_first;
+    for (auto jt = M.begin(); jt != M.end(); ++jt){
+      M_first.push_back((*jt).first);
+    }
+    int counter = 0;
+    for (Vertex parent : q_D_1[unvisited_vertex]){
+      if(std::find(M_first.begin(), M_first.end(), parent) != M_first.end()) {
+        // M_first contains parent
+        counter++;
+      } 
+    }
+    if(counter == q_size)
+      extendable_vector.push_back(unvisited_vertex);
   }
-  // extendable vertex 중 C_m(u)가 최소인 vertex 선택
+  // extendable vertex 중 |C_m(u)|가 최소인 vertex 선택
   size_t min = SIZE_MAX;
-  //for (auto it = extendable_vector.begin(); it != extendable_vector.end(); ++it) {
-    //size_t extendable_vertex = *it;
-    // size_t C_m_value = C_m(extendable_vertex);
-    // if (min > C_m_value)
-    // min = C_m_value;
-  //}
-  
+  for (auto it = extendable_vector.begin(); it != extendable_vector.end(); ++it) {
+    int query_index = std::distance(extendable_vector.begin(), it);
+    Vertex extendable_vertex = *it;
+    size_t C_m_value = sizeof(C_m(extendable_vertex)) / sizeof(Vertex);
+    if (min > C_m_value)
+      min = C_m_value;
+  }
   Vertex u = min;  
   return u;
 }
