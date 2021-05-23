@@ -20,13 +20,13 @@ class Backtrack {
   bool isEmbedding(const std::vector<Vertex> &embedding, const Graph &data, const Graph &query);
   void buildDAG(const Graph &G, const Graph &q);
   int C_ini(const Graph &G, const Graph &q, Vertex u);
-  void backtracking(const CandidateSet &cs);
+  void backtracking(const Graph &data, const Graph &query, const CandidateSet &cs);
   inline void initVisited(size_t n);
 
   Vertex extendable();
   Vertex* C_m(Vertex u);
 
-  static std::vector<std::pair<Vertex, Vertex>> M; // (partial) embedding. vector가 아니라 배열로 하는 게 나을 수도?
+  static std::vector <Vertex> M; // (partial) embedding. vector가 아니라 배열로 하는 게 나을 수도?
   bool* visited; //buildDAG, backtracking에서 두 번 쓰임
 
  private:

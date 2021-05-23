@@ -198,16 +198,20 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
  * @return none
  * @author Jinhyeong Kim
  */
-void Backtrack::backtracking(const CandidateSet &cs){
-  if(sizeof(M) == q_size){
-    // do printEmbedding()
+void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
+  if(M.size() == q_size){
+    // buildDAG과 backtracking 과정에서 isEmbedding의 condition1, condition2가 이미 만족되었다면
+    // isEmbedding(M, query)만으로 판별가능
+    // 지금은 확실한 확인을 위해 backtracking의 인수로 data, query graph 받아와야 할 것 같아요
+    if (isEmbedding(M, data, query))
+      printEmbedding(M);
   }
   else if (sizeof(M)==0){
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
       // do M <- (root, v); 
       visited[v] = true;
-      backtracking(cs);
+      backtracking(data, query, cs);
       visited[v] = false;
 
     }
@@ -219,7 +223,7 @@ void Backtrack::backtracking(const CandidateSet &cs){
         if (!visited[v]){
           // do M' <- M U (u,v);
           visited[v] = true;
-          backtracking(cs);
+          backtracking(data, query, cs);
           visited[v] = false;
         }
       }
