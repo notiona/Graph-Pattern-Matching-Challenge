@@ -130,6 +130,7 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   visit_order[root] = 0;
 
   q_D = new std::vector<Vertex>[q_size]; // query->DAG. adjacency list 형태로 저장
+  q_D_1 = new std::vector<Vertex>[q_size]; // q_D에서 모든 edge를 반대로 reverse한 DAG, adjacency list 형태로 저장
   std::queue<int> queue;
   queue.push(root);
 
@@ -162,15 +163,35 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
     }
   }
 
+  // q_D_1 reversal
+  transposeDAG(q_D, q_D_1);
+
   //DAG adjacency list 출력 (확인용)
-  for(size_t i = 0; i < q.GetNumVertices(); ++i){
-    std::cout << i;
-    for(size_t j = 0; j < q_D[i].size(); ++j){
-      std::cout << " " << q_D[i][j];
-    }
-    std::cout<<"\n";
-  }
+  printDAG(q_D);
+  printDAG(q_D_1);
 }
+  
+// function to get Transpose of a graph taking adjacency
+// list of given graph and that of Transpose graph
+void Backtrack::transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose){
+    // traverse the adjacency list of given graph and
+    // for each edge (u, v) add an edge (v, u) in the
+    // transpose graph's adjacency list
+    for (int i = 0; i < q_size; i++)
+        for (int j = 0; j < adj[i].size(); j++)
+            transpose[adj[i][j]].push_back(i); 
+}
+
+// function to print adjacency list of a graph
+void Backtrack::printDAG(std::vector<Vertex>* &adj){
+    for (int i = 0; i < q_size; i++) {
+        std::cout << i << "--> ";
+        for (int j = 0; j < adj[i].size(); j++)
+            std::cout << adj[i][j] << "  ";
+        std::cout << "\n";
+    }
+}
+
 
 /**
  * @brief get the size of initial CS of query node u.

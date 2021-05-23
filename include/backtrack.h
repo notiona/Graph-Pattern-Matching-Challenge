@@ -18,10 +18,13 @@ class Backtrack {
   void PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs);
   void printEmbedding(const std::vector<Vertex> &embedding);
   bool isEmbedding(const std::vector<Vertex> &embedding, const Graph &data, const Graph &query);
-  void buildDAG(const Graph &G, const Graph &q);
+  void buildDAG(const Graph &G, const Graph &q);  
   int C_ini(const Graph &G, const Graph &q, Vertex u);
   void backtracking(const Graph &data, const Graph &query, const CandidateSet &cs);
   inline void initVisited(size_t n);
+  
+  void transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose);
+  void printDAG(std::vector<Vertex>* &adj);
 
   Vertex extendable();
   Vertex* C_m(Vertex u);
@@ -33,6 +36,7 @@ class Backtrack {
   Vertex root;
   size_t q_size;
   std::vector<Vertex>* q_D; //query->DAG. adjacency list 형태로 저장
+  std::vector<Vertex>* q_D_1; //q_D에서 모든 edge를 반대로 reverse한 DAG, adjacency list 형태로 저장
 };
 
 /**
