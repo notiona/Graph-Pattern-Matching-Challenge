@@ -45,6 +45,7 @@ inline Vertex CandidateSet::GetCandidate(Vertex u, size_t i) const {
 
 /**
  * @brief Returns the size of whole nodes in CS
+ * @return size_t
  * @author Jinhyeong Kim
  */
 inline size_t CandidateSet::GetCSSize() const{

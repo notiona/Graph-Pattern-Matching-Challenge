@@ -4,7 +4,6 @@
  */
 
 #include "backtrack.h"
-#include <queue>
 
 Backtrack::Backtrack() {}
 Backtrack::~Backtrack() {}
@@ -106,18 +105,19 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   q_size = q.GetNumVertices();
   size_t deg = q.GetDegree(0);
   double size_C_ini = C_ini(G, q, 0);
-  double min = deg / size_C_ini;
-  Vertex min_idx = 0;
+  // deg = 0이 될 수 있으므로 역수의 최대값을 구하는 문제로 전환
+  double max = deg / size_C_ini;
+  Vertex max_idx = 0;
   for(size_t u = 1; u < q_size; ++u){
     deg = q.GetDegree(u);
     size_C_ini = C_ini(G, q, u);
     double val = deg / size_C_ini;
-    if (min > val) {
-      min = val;
-      min_idx = u;
+    if (max > val) {
+      max = val;
+      max_idx = u;
     }
   }
-  root = min_idx;
+  root = max_idx;
 
   // Traverse query in BFS order
   // BFS에서 same level의 경우에 순서를 정하는 것은 아직 따로 구현하지 않았음(논문에는 있지만)
@@ -183,7 +183,7 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
 int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
   int cnt = 0;
   for(size_t v=0; v < G.GetNumVertices(); ++v){ 
-    if (G.GetLabel(v) == q.GetLabel(v) && G.GetDegree(v) >= q.GetDegree(u)){
+    if (G.GetLabel(v) == q.GetLabel(u) && G.GetDegree(v) >= q.GetDegree(u)){
       ++cnt;
     }
   }
