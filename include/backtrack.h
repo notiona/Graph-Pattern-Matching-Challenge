@@ -26,7 +26,7 @@ class Backtrack {
   Vertex extendable();
   Vertex* C_m(Vertex u);
 
-  static std::vector <Vertex> M; // (partial) embedding. vector가 아니라 배열로 하는 게 나을 수도?
+  static std::vector<std::pair<Vertex, Vertex>> M; // (partial) embedding. vector가 아니라 배열로 하는 게 나을 수도?
   bool* visited; //buildDAG, backtracking에서 두 번 쓰임
 
  private:

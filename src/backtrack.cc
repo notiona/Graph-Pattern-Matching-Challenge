@@ -7,6 +7,8 @@
 
 Backtrack::Backtrack() {}
 Backtrack::~Backtrack() {}
+// declaration of static M(해줘야 에러 안 남)
+std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
   std::cout << "t " << query.GetNumVertices() << "\n";
@@ -26,7 +28,7 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const Can
   buildDAG(data, query);
 
   initVisited(cs.GetCSSize());
-  // backtracking(cs);
+  backtracking(data, query, cs);
 }
 
 /**
@@ -203,17 +205,32 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     // buildDAG과 backtracking 과정에서 isEmbedding의 condition1, condition2가 이미 만족되었다면
     // isEmbedding(M, query)만으로 판별가능
     // 지금은 확실한 확인을 위해 backtracking의 인수로 data, query graph 받아와야 할 것 같아요
-    if (isEmbedding(M, data, query))
-      printEmbedding(M);
+    
+    // std::vector<std::pair<Vertex, Vertex>>-> vector<Vertex> 형으로 변환
+    std::vector <Vertex> M_vector (query.GetNumVertices());
+    for (size_t i = 0; i < query.GetNumVertices(); ++i){
+      // 자동으로 query vertex 순서대로 들어간다
+      M_vector[ M[i].first ] = M[i].second;
+    }
+    // do printEmbedding()
+    if (isEmbedding(M_vector, data, query)){
+      printEmbedding(M_vector);
+      // initialize M
+      M.clear();
+    }
   }
-  else if (sizeof(M)==0){
+  else if (M.size() == 0){
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
       // do M <- (root, v); 
+      std::pair<Vertex, Vertex> root_candidate;
+      root_candidate.first = root;
+      root_candidate.second = v;
+      M.push_back(root_candidate);
+
       visited[v] = true;
       backtracking(data, query, cs);
       visited[v] = false;
-
     }
   }
   else{
@@ -222,6 +239,11 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
         Vertex v = C_m(u)[j];
         if (!visited[v]){
           // do M' <- M U (u,v);
+          std::pair<Vertex, Vertex> u_candidate;
+          u_candidate.first = u;
+          u_candidate.second = v;
+          M.push_back(u_candidate);
+
           visited[v] = true;
           backtracking(data, query, cs);
           visited[v] = false;
