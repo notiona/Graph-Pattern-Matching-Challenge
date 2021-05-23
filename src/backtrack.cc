@@ -112,7 +112,7 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
     deg = q.GetDegree(u);
     size_C_ini = C_ini(G, q, u);
     double val = deg / size_C_ini;
-    if (max > val) {
+    if (max < val) {
       max = val;
       max_idx = u;
     }
@@ -132,9 +132,9 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   queue.push(root);
 
   for(size_t i = q.GetNeighborStartOffset(root); i < q.GetNeighborEndOffset(root); ++i){
-    Vertex v = q.GetNeighbor(i); // vertex v adjacent to u
+    Vertex v = q.GetNeighbor(i); // vertex v adjacent to u, 지금은 vertex 오름차순 순으로 들어온다
     q_D[root].push_back(v);
-    }
+  }
   Vertex cnt = 0;
   while(!queue.empty()){
     Vertex u = queue.front(); queue.pop();
@@ -160,14 +160,14 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
     }
   }
 
-  // DAG adjacency list 출력 (확인용)
-  // for(int i=0; i<q.GetNumVertices(); ++i){
-  //   std::cout<<i;
-  //   for(int j=0; j<q_D[i].size(); ++j){
-  //     std::cout << " " << q_D[i][j];
-  //   }
-  //   std::cout<<"\n";
-  // }
+  //DAG adjacency list 출력 (확인용)
+  for(size_t i = 0; i < q.GetNumVertices(); ++i){
+    std::cout << i;
+    for(size_t j = 0; j < q_D[i].size(); ++j){
+      std::cout << " " << q_D[i][j];
+    }
+    std::cout<<"\n";
+  }
 }
 
 /**
