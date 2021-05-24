@@ -9,6 +9,7 @@
 #include "candidate_set.h"
 #include "common.h"
 #include "graph.h"
+#include <map>
 
 class Backtrack {
  public:
@@ -26,10 +27,14 @@ class Backtrack {
   void transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose);
   void printDAG(std::vector<Vertex>* &adj);
 
-  Vertex extendable();
-  Vertex* C_m(Vertex u);
+  Vertex extendable(const Graph &data, const CandidateSet &cs);
+  std::vector<Vertex> C_m(Vertex u, const Graph &data, const CandidateSet &cs);
 
+  std::vector<Vertex> N_u(Vertex u, Vertex v_p, const Graph &data, const CandidateSet &cs);
   static std::vector<std::pair<Vertex, Vertex>> M; // (partial) embedding. vector가 아니라 배열로 하는 게 나을 수도?
+  static std::map<Vertex, Vertex> M_dict; // M(u) 같은 연산이 필요하기 때문에 ditctionary 버전도 만듦. 
+                                          // 일단 빠르게 완성하기 위해 M, M_dict 두개를 같이 쓰고, 나중에 가능하다면 hash table만 남기면 될 듯.
+                                          // C++에 익숙하지 않아서 std::map을 썼는데 혹시 다른 자료구조가 더 좋은 게 있으면 바꿔주셔도 좋습니다.
   bool* visited; //buildDAG, backtracking에서 두 번 쓰임
 
  private:
@@ -43,7 +48,6 @@ class Backtrack {
  * @brief backtrack.cc에서 반복해서 사용되는 visited[]를 처음 선언할 때 false로 초기화시켜주는 함수
  * @param n size of array
  * @return none
- * @author Jinhyeong Kim
  */
 inline void Backtrack::initVisited(size_t n){
   visited = new bool[n];

@@ -7,23 +7,24 @@
 
 Backtrack::Backtrack() {}
 Backtrack::~Backtrack() {}
-// declaration of static M(해줘야 에러 안 남)
+// declaration of static M, M_dict (해줘야 에러 안 남)
 std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
+std::map<Vertex, Vertex> Backtrack::M_dict;
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
-  std::cout << "t " << query.GetNumVertices() << "\n";
-  std::vector <Vertex> embedding (query.GetNumVertices());
+  // std::cout << "t " << query.GetNumVertices() << "\n";
+  // std::vector <Vertex> embedding (query.GetNumVertices());
   
-  // change below values to create embedding
-  embedding[0] = 1;
-  embedding[1] = 2;
-  embedding[2] = 4;
-  embedding[3] = 9;
+  // // change below values to create embedding
+  // embedding[0] = 1;
+  // embedding[1] = 2;
+  // embedding[2] = 4;
+  // embedding[3] = 9;
   
-  if (isEmbedding(embedding, data, query))
-    printEmbedding(embedding);
+  // if (isEmbedding(embedding, data, query))
+  //   printEmbedding(embedding);
   
-  std::cout << "is Embedding?: "<< (isEmbedding(embedding, data, query) ? "true" : "false") << "\n";
+  // std::cout << "is Embedding?: "<< (isEmbedding(embedding, data, query) ? "true" : "false") << "\n";
 
   buildDAG(data, query);
 
@@ -46,7 +47,6 @@ void Backtrack::printEmbedding(const std::vector<Vertex> &embedding){
 
 /**
  * @brief Return true if given embedding satisfies embedding conditions, otherwise return false.
- *
  * @param embedding embedding to be tested.
  * @param data data graph.
  * @param query query graph.
@@ -166,9 +166,9 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   // q_D_1 reversal
   transposeDAG(q_D, q_D_1);
 
-  //DAG adjacency list 출력 (확인용)
-  printDAG(q_D);
-  printDAG(q_D_1);
+  // DAG adjacency list 출력 (확인용)
+  // printDAG(q_D);
+  // printDAG(q_D_1);
 }
   
 // function to get Transpose of a graph taking adjacency
@@ -214,7 +214,7 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
 }
 
 /**
- * @brief Backtrack. <Algorithm 2> in the paper.
+ * @brief Backtrack. See <Algorithm 2> in the paper.
  * @details 구현 안 한 부분은 주석 처리해놓고서 논문의 pseudo code를 그대로 적었습니다.
    M, visited[]는 class 변수로 두어서 따로 parameter에 넣지 않았습니다. 물론 이게 제대로 작동하는 건지는 저도 모르니 마음대로 수정해주시면 감사합니다.
  * @param cs CandidateSet 
@@ -238,6 +238,8 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       printEmbedding(M_vector);
       // initialize M
       M.clear();
+    } else { // 확인용 출력
+      std::cout<<"It is not an Embedding!"<<std::endl;
     }
   }
   else if (M.size() == 0){
@@ -248,6 +250,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       root_candidate.first = root;
       root_candidate.second = v;
       M.push_back(root_candidate);
+      M_dict[root] = v;
 
       visited[v] = true;
       backtracking(data, query, cs);
@@ -255,15 +258,17 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     }
   }
   else{
-    Vertex u = extendable();
-      for(size_t j = 0; j < sizeof(C_m(u)); ++j){
-        Vertex v = C_m(u)[j];
+    Vertex u = extendable(data, cs);
+      std::vector<Vertex> C_m_ = C_m(u, data, cs);
+      for(size_t j = 0; j < sizeof(C_m_); ++j){
+        Vertex v = C_m_[j];
         if (!visited[v]){
           // do M' <- M U (u,v);
           std::pair<Vertex, Vertex> u_candidate;
           u_candidate.first = u;
           u_candidate.second = v;
           M.push_back(u_candidate);
+          M_dict[u] = v;
 
           visited[v] = true;
           backtracking(data, query, cs);
@@ -273,10 +278,8 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
   }  
 }
 
-/**
- * @author Jinhyeong Kim
- */
-Vertex Backtrack::extendable(){
+
+Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   // return a extendable vertex
   // unvisited query vertex u is extendable if all parents of u are matched in M 
   std::vector <Vertex> unvisited;
@@ -298,30 +301,70 @@ Vertex Backtrack::extendable(){
       if(std::find(M_first.begin(), M_first.end(), parent) != M_first.end()) {
         // M_first contains parent
         counter++;
-      } 
+      }
     }
     if(counter == q_size)
       extendable_vector.push_back(unvisited_vertex);
   }
+  
+  //////// exdata, exquery, excandidate 가지고서 돌려봤는데, extendable vertices 6개라고 나옴. query에 노드가 5개뿐인데 어떻게..?
+  std::cout<<"number of extendable verteices: "<<sizeof(extendable_vector) / sizeof(Vertex)<<"\n";
+  
+
   // extendable vertex 중 |C_m(u)|가 최소인 vertex 선택
   size_t min = SIZE_MAX;
   for (auto it = extendable_vector.begin(); it != extendable_vector.end(); ++it) {
     int query_index = std::distance(extendable_vector.begin(), it);
     Vertex extendable_vertex = *it;
-    size_t C_m_value = sizeof(C_m(extendable_vertex)) / sizeof(Vertex);
+    size_t C_m_value = sizeof(C_m(extendable_vertex, data, cs)) / sizeof(Vertex);
     if (min > C_m_value)
       min = C_m_value;
   }
-  Vertex u = min;  
+  Vertex u = min; ///////// 여기서 문제 발생! u = -1이 된다.
+                  ///////// 바로 위의 for문을 돌지 않음. 왜지? 
+                  ///////// 그래서 u = min할 때, min, SIZE_MAX 값이 Vertex(int32_t) 범위를 넘기 때문에 overflow가 발생하는 것 같음.
+                  ///////// 이터레이션의 첫번째 경우를 먼저 계산해서 그 값을 min으로 두고서 시작하면 해결될 텐데, C++에 익숙치가 않아서 만지다가 오히려 더 고장낼까봐... 남겨둡니다..
   return u;
 }
 
 /**
  * @author Jinhyeong Kim
  */
-Vertex* Backtrack::C_m(Vertex u){
+std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateSet &cs){
   // return C_m(u), set of extendable candidates of u regarding partial embedding M
-  // Vertex들의 배열을 반환
- // (아래는 단지 에러 일으키지 않기 위해 넣은 것)
-  return &root;
+  // see <ch15. graph_pattern_matching> p19.
+  // Vertex들의 set을 반환
+
+  std::vector<Vertex> result;
+  Vertex u_p = q_D_1[u][0];
+  result = N_u(u, M_dict[u_p], data, cs);
+  for(size_t i = 1; i < sizeof(q_D_1[u]); ++i){
+    u_p = q_D_1[u][i];
+    std::vector<Vertex> N = N_u(u, M_dict[u_p], data, cs);
+    std::vector<Vertex> tmp;
+    std::set_intersection(result.begin(), result.end(),
+                          N.begin(), N.end(),
+                          std::back_inserter(tmp));
+    result = tmp;
+  }
+
+  return result;
+}
+
+/**
+ * @brief N sup(u_p) sub(u)를 구현. (see <ch15. graph_pattern_matching> p19.)
+ * @param u vertex in query
+ * @param v_p = M(u_p)
+ * @return set of vertices v, those adjacent to v_p in G such taht v in C(u)
+ */
+std::vector<Vertex> Backtrack::N_u(Vertex u, Vertex v_p, const Graph &data, const CandidateSet &cs){
+  std::vector<Vertex> result;
+  for(size_t i = 0; i < cs.GetCandidateSize(u); ++u){
+    Vertex v =cs.GetCandidate(u, i);
+    if (data.IsNeighbor(v, v_p)){
+      result.push_back(v);
+    }
+  }
+  std::sort(result.begin(), result.end()); // intersection을 위해 sorting해놓음
+  return result;
 }
