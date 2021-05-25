@@ -7,9 +7,10 @@
 
 Backtrack::Backtrack() {}
 Backtrack::~Backtrack() {}
-// declaration of static M, M_dict (해줘야 에러 안 남)
+// declaration of static M, M_dict, visited_query, visited_cs (해줘야 에러 안 남)
 std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
 std::map<Vertex, Vertex> Backtrack::M_dict;
+std::vector<bool> Backtrack::visited_cs;
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
   // std::cout << "t " << query.GetNumVertices() << "\n";
@@ -28,7 +29,10 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const Can
 
   buildDAG(data, query);
 
-  initVisited(cs.GetCSSize());
+  // init visited_cs;
+  for(int i = 0; i < data.GetNumVertices(); ++i){
+    visited_cs.push_back(false);
+  }
   backtracking(data, query, cs);
 }
 
@@ -123,8 +127,8 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
 
   // Traverse query in BFS order
   // BFS에서 same level의 경우에 순서를 정하는 것은 아직 따로 구현하지 않았음(논문에는 있지만)
-  initVisited(q_size);
-  visited[root] = true;
+  std::vector<bool> visited_query(q_size);
+  visited_query[root] = true;
 
   Vertex* visit_order = new Vertex[q_size];
   visit_order[root] = 0;
@@ -143,8 +147,8 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
     Vertex u = queue.front(); queue.pop();
     for(size_t i = q.GetNeighborStartOffset(u); i < q.GetNeighborEndOffset(u); ++i){
       Vertex v = q.GetNeighbor(i);
-      if (visited[v] == false) {
-        visited[v] = true;
+      if (visited_query[v] == false) {
+        visited_query[v] = true;
         queue.push(v);
         visit_order[v] = ++cnt;
       }
@@ -222,6 +226,8 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
  * @author Jinhyeong Kim
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
+  std::cout<<"M.size(): "<< M.size() <<std::endl;
+  std::cout<<"q_size: "<< q_size <<std::endl;
   if(M.size() == q_size){
     // buildDAG과 backtracking 과정에서 isEmbedding의 condition1, condition2가 이미 만족되었다면
     // isEmbedding(M, query)만으로 판별가능
@@ -243,6 +249,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     }
   }
   else if (M.size() == 0){
+    std::cout<<"Control was here"<<std::endl;
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
       // do M <- (root, v); 
@@ -252,42 +259,51 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       M.push_back(root_candidate);
       M_dict[root] = v;
 
-      visited[v] = true;
+      visited_cs[v] = true;
       backtracking(data, query, cs);
-      visited[v] = false;
+      visited_cs[v] = false;
     }
+    std::cout<<"Full root backtracking complete"<<std::endl;
   }
   else{
     Vertex u = extendable(data, cs);
-      std::vector<Vertex> C_m_ = C_m(u, data, cs);
-      for(size_t j = 0; j < sizeof(C_m_); ++j){
-        Vertex v = C_m_[j];
-        if (!visited[v]){
-          // do M' <- M U (u,v);
-          std::pair<Vertex, Vertex> u_candidate;
-          u_candidate.first = u;
-          u_candidate.second = v;
-          M.push_back(u_candidate);
-          M_dict[u] = v;
+    std::vector<Vertex> C_m_ = C_m(u, data, cs);
+    for(size_t j = 0; j < sizeof(C_m_); ++j){
+      Vertex v = C_m_[j];
+      if (!visited_cs[v]){
+        // do M' <- M U (u,v);
+        std::pair<Vertex, Vertex> u_candidate;
+        u_candidate.first = u;
+        u_candidate.second = v;
+        M.push_back(u_candidate);
+        M_dict[u] = v;
 
-          visited[v] = true;
-          backtracking(data, query, cs);
-          visited[v] = false;
-        }
+        visited_cs[v] = true;
+        backtracking(data, query, cs);
+        visited_cs[v] = false;
       }
+    }
   }  
 }
 
 
 Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
+  std::cout<<"extendable() called.\n";
   // return a extendable vertex
-  // unvisited query vertex u is extendable if all parents of u are matched in M 
+  // Condition: vertex should be unvisited
   std::vector <Vertex> unvisited;
-  for(size_t i = 0; i < q_size; i++) {
-    if(visited[i]) {
+  std::cout<<"visited_cs.size() "<< visited_cs.size() <<"\n";
+  for(size_t i = 0; i < visited_cs.size(); i++) {
+    if(!visited_cs[i]) {
       unvisited.push_back(i);
     }
   }
+  std::cout<<"unvisited.size() "<< unvisited.size() <<"\n";
+  std::cout<<"unvisited "<<unvisited[0]<<"\n";
+  std::cout<<"unvisited "<<unvisited[1]<<"\n";
+  std::cout<<"unvisited "<<unvisited[2]<<"\n";
+  // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
+  // 아래 logic 수정해야
   std::vector <Vertex> extendable_vector;
   for (auto it = unvisited.begin(); it != unvisited.end(); ++it) {
     size_t unvisited_vertex = *it;
@@ -305,11 +321,10 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     }
     if(counter == q_size)
       extendable_vector.push_back(unvisited_vertex);
+    std::cout<<"number of extendable vertices: "<<sizeof(extendable_vector) / sizeof(Vertex)<<"\n";
   }
   
-  //////// exdata, exquery, excandidate 가지고서 돌려봤는데, extendable vertices 6개라고 나옴. query에 노드가 5개뿐인데 어떻게..?
-  std::cout<<"number of extendable verteices: "<<sizeof(extendable_vector) / sizeof(Vertex)<<"\n";
-  
+  //////// exdata, exquery, excandidate 가지고서 돌려봤는데, extendable vertices 6개라고 나옴. query에 노드가 4개뿐인데 어떻게..?
 
   // extendable vertex 중 |C_m(u)|가 최소인 vertex 선택
   size_t min = SIZE_MAX;
@@ -317,6 +332,7 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     int query_index = std::distance(extendable_vector.begin(), it);
     Vertex extendable_vertex = *it;
     size_t C_m_value = sizeof(C_m(extendable_vertex, data, cs)) / sizeof(Vertex);
+    std::cout<< "C_m() " << sizeof(C_m(extendable_vertex, data, cs)) / sizeof(Vertex) <<"\n";
     if (min > C_m_value)
       min = C_m_value;
   }

@@ -22,7 +22,6 @@ class Backtrack {
   void buildDAG(const Graph &G, const Graph &q);  
   int C_ini(const Graph &G, const Graph &q, Vertex u);
   void backtracking(const Graph &data, const Graph &query, const CandidateSet &cs);
-  inline void initVisited(size_t n);
   
   void transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose);
   void printDAG(std::vector<Vertex>* &adj);
@@ -35,7 +34,7 @@ class Backtrack {
   static std::map<Vertex, Vertex> M_dict; // M(u) 같은 연산이 필요하기 때문에 ditctionary 버전도 만듦. 
                                           // 일단 빠르게 완성하기 위해 M, M_dict 두개를 같이 쓰고, 나중에 가능하다면 hash table만 남기면 될 듯.
                                           // C++에 익숙하지 않아서 std::map을 썼는데 혹시 다른 자료구조가 더 좋은 게 있으면 바꿔주셔도 좋습니다.
-  bool* visited; //buildDAG, backtracking에서 두 번 쓰임
+  static std::vector<bool> visited_cs;
 
  private:
   Vertex root;
@@ -43,17 +42,5 @@ class Backtrack {
   std::vector<Vertex>* q_D; //query->DAG. adjacency list 형태로 저장
   std::vector<Vertex>* q_D_1; //q_D에서 모든 edge를 반대로 reverse한 DAG, adjacency list 형태로 저장
 };
-
-/**
- * @brief backtrack.cc에서 반복해서 사용되는 visited[]를 처음 선언할 때 false로 초기화시켜주는 함수
- * @param n size of array
- * @return none
- */
-inline void Backtrack::initVisited(size_t n){
-  visited = new bool[n];
-  for(size_t i = 0; i < n; ++i){
-    visited[i] = false;
-  }
-}
 
 #endif  // BACKTRACK_H_
