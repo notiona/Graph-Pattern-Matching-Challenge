@@ -296,7 +296,6 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
 Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   std::cout<<"extendable() called.\n";
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
-  // 아래 logic 수정해야
   std::vector <Vertex> extendable_vector;
   std::vector<Vertex> M_first;
   for (auto it = M.begin(); it != M.end(); ++it){
@@ -330,7 +329,7 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     size_t C_m_value = cs.GetCandidateSize(extendable_vertex); 
     std::cout<< "C_m(): " << C_m_value <<"\n";
     if (min > C_m_value)
-      min = C_m_value;
+      min = extendable_vertex;
   }
   std::cout<< "extendable() returned. return of extendable(): " << min <<"\n";
   return min;
