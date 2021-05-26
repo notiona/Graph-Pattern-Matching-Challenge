@@ -13,31 +13,28 @@ std::map<Vertex, Vertex> Backtrack::M_dict;
 std::map<Vertex, bool> Backtrack::visited_cs;
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
-  // std::cout << "t " << query.GetNumVertices() << "\n";
-  // std::vector <Vertex> embedding (query.GetNumVertices());
   
-  // // change below values to create embedding
-  // embedding[0] = 1;
-  // embedding[1] = 2;
-  // embedding[2] = 4;
-  // embedding[3] = 9;
-  
-  // if (isEmbedding(embedding, data, query))
-  //   printEmbedding(embedding);
-  
-  // std::cout << "is Embedding?: "<< (isEmbedding(embedding, data, query) ? "true" : "false") << "\n";
-
+  clock_t start = clock();
+  std::cout<<"start buildDAG...\n";
   buildDAG(data, query);
+  std::cout<<"buildDAG completed: "<<(double) (clock() - start)/1000<<"s"<<std::endl; start = clock();
 
   // init visited_cs;
+  std::cout<<"initalize visited_cs...\n";
   for(size_t i = 0; i < q_size; i++){
     for(size_t j = 0; j < cs.GetCandidateSize(i); j++){
       Vertex candidate_set_vertex = cs.GetCandidate(i, j);
       visited_cs.insert(std::pair<Vertex, bool>(candidate_set_vertex, false));
     }
   }
+  std::cout<<"init visited_cs completed: "<<(double) (clock() - start)/1000<<"s"<<std::endl; start = clock();
+
   //std::cout << "visited_cs.size()"<< visited_cs.size() << "\n";
+
+  std::cout<<"start backtracking(data, query, cs)...\n";
+  std::cout<<"query.size(): "<<q_size<<std::endl;
   backtracking(data, query, cs);
+  std::cout<<"\nprogram ended: "<<(double) (clock() - start)/1000<<"s"<<std::endl;
 }
 
 /**
@@ -200,7 +197,6 @@ void Backtrack::printDAG(std::vector<Vertex>* &adj){
     }
 }
 
-
 /**
  * @brief get the size of initial CS of query node u.
  * @details v is in C_ini(u), if label(v)=label(u) && degree(v)>=degree(u)
@@ -224,17 +220,17 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
 /**
  * @brief Backtrack. See <Algorithm 2> in the paper.
  * @details 구현 안 한 부분은 주석 처리해놓고서 논문의 pseudo code를 그대로 적었습니다.
-   M, visited[]는 class 변수로 두어서 따로 parameter에 넣지 않았습니다. 물론 이게 제대로 작동하는 건지는 저도 모르니 마음대로 수정해주시면 감사합니다.
+            M, visited[]는 class 변수로 두어서 따로 parameter에 넣지 않았습니다.
  * @param cs CandidateSet 
  * @return none
- * @author Jinhyeong Kim
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
-  std::cout<<"M.size(): "<< M.size() <<std::endl;
+  std::cout<<"\nM.size(): "<< M.size()<<std::endl;
   for (auto it = M.begin(); it != M.end(); ++it) {
-    std::cout<< "M.query_vertex: " << (*it).first <<" ";
+    std::cout<< "M.query_vertex: " << (*it).first <<", ";
     std::cout<< "M.data_vertex: " << (*it).second << std::endl;
   }
+
   if(M.size() == q_size){
     // buildDAG과 backtracking 과정에서 isEmbedding의 condition1, condition2가 이미 만족되었다면
     // isEmbedding(M, query)만으로 판별가능
@@ -250,15 +246,15 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     if (isEmbedding(M_vector, data, query)){
       printEmbedding(M_vector);
       // initialize M
-      M.clear();
     } else { // 확인용 출력
       std::cout<<"It is not an Embedding!"<<std::endl;
-      M.clear();
     }
   }
   else if (M.size() == 0){
+    std::cout<<"# of candidates: "<<cs.GetCandidateSize(root)<<"\n";
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
+      std::cout<<"now trying "<<i+1<<"th candidate, vertex "<<v<<std::endl;
       // do M <- (root, v); 
       std::pair<Vertex, Vertex> root_candidate;
       root_candidate.first = root;
@@ -274,7 +270,8 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
   else{
     Vertex u = extendable(data, cs);
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
-    for(size_t j = 0; j < sizeof(C_m_); ++j){
+    std::cout<<"# of extendable candidates: "<<C_m_.size()<<std::endl;
+    for(size_t j = 0; j < C_m_.size(); ++j){
       Vertex v = C_m_[j];
       if (!visited_cs[v]){
         // do M' <- M U (u,v);
@@ -294,8 +291,8 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
 
 
 Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
-  std::cout<<"extendable() called.\n";
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
+  std::cout<<"extendable() called.\n";
   std::vector <Vertex> extendable_vector;
   std::vector<Vertex> M_first;
   for (auto it = M.begin(); it != M.end(); ++it){
@@ -311,42 +308,40 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   for (auto it = M_first.begin(); it != M_first.end(); ++it){
     extendable_set.erase(*it);
   }
-  std::cout<<"Extendable vertices:"<<std::endl;
+  std::cout<<"Extendable vertices: ";
   for (auto it = extendable_set.begin(); it != extendable_set.end(); ++it){
     std::cout<<*it<<" ";
   }
   std::cout<<std::endl;
   // set to vector
   std::copy(extendable_set.begin(), extendable_set.end(), std::back_inserter(extendable_vector));
-  
-  std::cout<<"number of extendable vertices: "<<extendable_vector.size()<<"\n";
 
   // extendable vertex 중 |C_m(u)|가 최소인 vertex 선택
   size_t min = 10000;
+  Vertex min_extendable_vertex = 10000;
   for (auto it = extendable_vector.begin(); it != extendable_vector.end(); ++it) {
     Vertex extendable_vertex = *it;
     // 원래 C_m_value = C_m(u, data, cs).size()인데 오류가 나서 지금은 이렇게 하겠습니다
     size_t C_m_value = cs.GetCandidateSize(extendable_vertex); 
     std::cout<< "C_m(): " << C_m_value <<"\n";
     if (min > C_m_value)
-      min = extendable_vertex;
+      min_extendable_vertex = extendable_vertex;
   }
-  std::cout<< "extendable() returned. return of extendable(): " << min <<"\n";
-  return min;
+  std::cout<< "extendable() returns: " << min_extendable_vertex <<"\n";
+  return min_extendable_vertex;
 }
 
-/**
- * @author Jinhyeong Kim
- */
 std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateSet &cs){
   // return C_m(u), set of extendable candidates of u regarding partial embedding M
   // see <ch15. graph_pattern_matching> p19.
   // Vertex들의 set을 반환
   //std::cout<<"C_m() called.\n";
+
   std::vector<Vertex> result;
-  Vertex u_p = q_D_1[u][0];
+  Vertex u_p = q_D_1[u][0];  // 교집합 하기 위해서 맨 첫번째 (i=0)일 때는 미리 구해놓음
   result = N_u(u, M_dict[u_p], data, cs);
-  for(size_t i = 1; i < sizeof(q_D_1[u]); ++i){
+
+  for(size_t i = 1; i < q_D_1[u].size(); ++i){
     u_p = q_D_1[u][i];
     std::vector<Vertex> N = N_u(u, M_dict[u_p], data, cs);
     std::vector<Vertex> tmp;
