@@ -26,7 +26,7 @@ class Backtrack {
   void transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose);
   void printDAG(std::vector<Vertex>* &adj);
 
-  Vertex extendable(Vertex u, const Graph &data, const CandidateSet &cs);
+  Vertex extendable(const Graph &data, const CandidateSet &cs);
   std::vector<Vertex> C_m(Vertex u, const Graph &data, const CandidateSet &cs);
 
   std::vector<Vertex> N_u(Vertex u, Vertex v_p, const Graph &data, const CandidateSet &cs);

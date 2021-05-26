@@ -30,7 +30,7 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const Can
   buildDAG(data, query);
 
   // init visited_cs;
-  for(Vertex i = 0; i < q_size; i++){
+  for(size_t i = 0; i < q_size; i++){
     for(size_t j = 0; j < cs.GetCandidateSize(i); j++){
       Vertex candidate_set_vertex = cs.GetCandidate(i, j);
       visited_cs.insert(std::pair<Vertex, bool>(candidate_set_vertex, false));
@@ -175,8 +175,8 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   transposeDAG(q_D, q_D_1);
 
   // DAG adjacency list 출력 (확인용)
-  // printDAG(q_D);
-  // printDAG(q_D_1);
+  //printDAG(q_D);
+  //printDAG(q_D_1);
 }
   
 // function to get Transpose of a graph taking adjacency
@@ -185,16 +185,16 @@ void Backtrack::transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &tr
     // traverse the adjacency list of given graph and
     // for each edge (u, v) add an edge (v, u) in the
     // transpose graph's adjacency list
-    for (int i = 0; i < q_size; i++)
-        for (int j = 0; j < adj[i].size(); j++)
+    for (size_t i = 0; i < q_size; i++)
+        for (size_t j = 0; j < adj[i].size(); j++)
             transpose[adj[i][j]].push_back(i); 
 }
 
 // function to print adjacency list of a graph
 void Backtrack::printDAG(std::vector<Vertex>* &adj){
-    for (int i = 0; i < q_size; i++) {
+    for (size_t i = 0; i < q_size; i++) {
         std::cout << i << "--> ";
-        for (int j = 0; j < adj[i].size(); j++)
+        for (size_t j = 0; j < adj[i].size(); j++)
             std::cout << adj[i][j] << "  ";
         std::cout << "\n";
     }
@@ -231,7 +231,10 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
   std::cout<<"M.size(): "<< M.size() <<std::endl;
-  std::cout<<"q_size: "<< q_size <<std::endl;
+  for (auto it = M.begin(); it != M.end(); ++it) {
+    std::cout<< "M.query_vertex: " << (*it).first <<" ";
+    std::cout<< "M.data_vertex: " << (*it).second << std::endl;
+  }
   if(M.size() == q_size){
     // buildDAG과 backtracking 과정에서 isEmbedding의 condition1, condition2가 이미 만족되었다면
     // isEmbedding(M, query)만으로 판별가능
@@ -250,10 +253,10 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       M.clear();
     } else { // 확인용 출력
       std::cout<<"It is not an Embedding!"<<std::endl;
+      M.clear();
     }
   }
   else if (M.size() == 0){
-    std::cout<<"Control was here"<<std::endl;
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
       // do M <- (root, v); 
@@ -267,10 +270,9 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       backtracking(data, query, cs);
       visited_cs[v] = false;
     }
-    std::cout<<"Full root backtracking complete"<<std::endl;
   }
   else{
-    Vertex u = extendable(u, data, cs);
+    Vertex u = extendable(data, cs);
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
     for(size_t j = 0; j < sizeof(C_m_); ++j){
       Vertex v = C_m_[j];
@@ -291,47 +293,47 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
 }
 
 
-Vertex Backtrack::extendable(Vertex u, const Graph &data, const CandidateSet &cs){
+Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   std::cout<<"extendable() called.\n";
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
   // 아래 logic 수정해야
   std::vector <Vertex> extendable_vector;
-  // for (auto it = unvisited.begin(); it != unvisited.end(); ++it) {
-  //   size_t unvisited_vertex = *it;
-  //   // parent 있는지 확인 위해 q_D_1 필요
-  //   std::vector<Vertex> M_first;
-  //   for (auto jt = M.begin(); jt != M.end(); ++jt){
-  //     M_first.push_back((*jt).first);
-  //   }
-  //   int counter = 0;
-  //   for (Vertex parent : q_D_1[unvisited_vertex]){
-  //     if(std::find(M_first.begin(), M_first.end(), parent) != M_first.end()) {
-  //       // M_first contains parent
-  //       counter++;
-  //     }
-  //   }
-  //   if(counter == q_size)
-  //     extendable_vector.push_back(unvisited_vertex);
-  //   std::cout<<"number of extendable vertices: "<<sizeof(extendable_vector) / sizeof(Vertex)<<"\n";
-  // }
+  std::vector<Vertex> M_first;
+  for (auto it = M.begin(); it != M.end(); ++it){
+    M_first.push_back((*it).first);
+  }
+  std::set<Vertex> extendable_set;
+  for (auto it = M_first.begin(); it != M_first.end(); ++it){
+    int index = std::distance(M_first.begin(), it);
+    for (auto jt = q_D[index].begin(); jt != q_D[index].end(); ++jt){
+      extendable_set.insert(*jt);
+    } 
+  }
+  for (auto it = M_first.begin(); it != M_first.end(); ++it){
+    extendable_set.erase(*it);
+  }
+  std::cout<<"Extendable vertices:"<<std::endl;
+  for (auto it = extendable_set.begin(); it != extendable_set.end(); ++it){
+    std::cout<<*it<<" ";
+  }
+  std::cout<<std::endl;
+  // set to vector
+  std::copy(extendable_set.begin(), extendable_set.end(), std::back_inserter(extendable_vector));
   
-  //////// exdata, exquery, excandidate 가지고서 돌려봤는데, extendable vertices 6개라고 나옴. query에 노드가 4개뿐인데 어떻게..?
+  std::cout<<"number of extendable vertices: "<<extendable_vector.size()<<"\n";
 
   // extendable vertex 중 |C_m(u)|가 최소인 vertex 선택
-  size_t min = SIZE_MAX;
+  size_t min = 10000;
   for (auto it = extendable_vector.begin(); it != extendable_vector.end(); ++it) {
-    int query_index = std::distance(extendable_vector.begin(), it);
     Vertex extendable_vertex = *it;
-    size_t C_m_value = sizeof(C_m(extendable_vertex, data, cs)) / sizeof(Vertex);
-    std::cout<< "C_m() " << sizeof(C_m(extendable_vertex, data, cs)) / sizeof(Vertex) <<"\n";
+    // 원래 C_m_value = C_m(u, data, cs).size()인데 오류가 나서 지금은 이렇게 하겠습니다
+    size_t C_m_value = cs.GetCandidateSize(extendable_vertex); 
+    std::cout<< "C_m(): " << C_m_value <<"\n";
     if (min > C_m_value)
       min = C_m_value;
   }
-  Vertex u = min; ///////// 여기서 문제 발생! u = -1이 된다.
-                  ///////// 바로 위의 for문을 돌지 않음. 왜지? 
-                  ///////// 그래서 u = min할 때, min, SIZE_MAX 값이 Vertex(int32_t) 범위를 넘기 때문에 overflow가 발생하는 것 같음.
-                  ///////// 이터레이션의 첫번째 경우를 먼저 계산해서 그 값을 min으로 두고서 시작하면 해결될 텐데, C++에 익숙치가 않아서 만지다가 오히려 더 고장낼까봐... 남겨둡니다..
-  return u;
+  std::cout<< "extendable() returned. return of extendable(): " << min <<"\n";
+  return min;
 }
 
 /**
@@ -341,7 +343,7 @@ std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateS
   // return C_m(u), set of extendable candidates of u regarding partial embedding M
   // see <ch15. graph_pattern_matching> p19.
   // Vertex들의 set을 반환
-
+  //std::cout<<"C_m() called.\n";
   std::vector<Vertex> result;
   Vertex u_p = q_D_1[u][0];
   result = N_u(u, M_dict[u_p], data, cs);
@@ -354,7 +356,7 @@ std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateS
                           std::back_inserter(tmp));
     result = tmp;
   }
-
+  //std::cout<< "C_m() returned.\n";
   return result;
 }
 
@@ -365,13 +367,15 @@ std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateS
  * @return set of vertices v, those adjacent to v_p in G such taht v in C(u)
  */
 std::vector<Vertex> Backtrack::N_u(Vertex u, Vertex v_p, const Graph &data, const CandidateSet &cs){
+  //std::cout<<"N_u() called.\n";
   std::vector<Vertex> result;
-  for(size_t i = 0; i < cs.GetCandidateSize(u); ++u){
+  for(size_t i = 0; i < cs.GetCandidateSize(u); ++i){
     Vertex v =cs.GetCandidate(u, i);
     if (data.IsNeighbor(v, v_p)){
       result.push_back(v);
     }
   }
   std::sort(result.begin(), result.end()); // intersection을 위해 sorting해놓음
+  //std::cout<<"N_u() returned.\n";
   return result;
 }
