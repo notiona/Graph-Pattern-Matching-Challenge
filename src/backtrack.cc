@@ -13,7 +13,7 @@ std::map<Vertex, Vertex> Backtrack::M_dict;
 std::map<Vertex, bool> Backtrack::visited_cs;
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
-  
+
   clock_t start = clock();
   std::cout<<"start buildDAG...\n";
   buildDAG(data, query);
@@ -32,7 +32,7 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const Can
   //std::cout << "visited_cs.size()"<< visited_cs.size() << "\n";
 
   std::cout<<"start backtracking(data, query, cs)...\n";
-  std::cout<<"query.size(): "<<q_size<<std::endl;
+  //std::cout<<"query.size(): "<<q_size<<std::endl;
   backtracking(data, query, cs);
   std::cout<<"\nprogram ended: "<<(double) (clock() - start)/1000<<"s"<<std::endl;
 }
@@ -44,10 +44,17 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const Can
  * @return None
  */
 void Backtrack::printEmbedding(const std::vector<Vertex> &embedding){
+  std::ofstream outfile;
+  outfile.open("answer.igraph", std::ios_base::app);
   std::cout << "a";
-  for (int x : embedding)
+  outfile << "a";
+  for (int x : embedding){
     std::cout << " " << x;
+    outfile << " " << x;
+  }
   std::cout << "\n";
+  outfile << "\n";
+  outfile.close();
 }
 
 /**
@@ -64,7 +71,7 @@ bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &d
   std::set<Vertex> s(embedding.begin(), embedding.end()); // may want to use std::unordered_set for performance
   bool isInjective = s.size() == embedding.size();
   if (!isInjective){
-    std::cout << "Condition 1 Not Satisfied!\n";
+    //std::cout << "Condition 1 Not Satisfied!\n";
     return false;
   }
   // condition 2: embedding and data graph should have same labels
@@ -74,7 +81,7 @@ bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &d
     int label_query = query.GetLabel(vertex_query);
     int label_data = data.GetLabel(vertex_data);
     if (label_query != label_data){
-      std::cout << "Condition 2 Not Satisfied!\n";
+      //std::cout << "Condition 2 Not Satisfied!\n";
       return false;
     }
   }
@@ -88,7 +95,7 @@ bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &d
       
       if (vertex_query < vertex_neighbor){
         if(!data.IsNeighbor(embedding[vertex_query], embedding[vertex_neighbor])){
-          std::cout << "Condition 3 Not Satisfied!\n";
+          //std::cout << "Condition 3 Not Satisfied!\n";
           return false;
         }
       }
@@ -225,10 +232,10 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
  * @return none
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
-  std::cout<<"\nM.size(): "<< M.size()<<std::endl;
+  //std::cout<<"\nM.size(): "<< M.size()<<std::endl;
   for (auto it = M.begin(); it != M.end(); ++it) {
-    std::cout<< "M.query_vertex: " << (*it).first <<", ";
-    std::cout<< "M.data_vertex: " << (*it).second << std::endl;
+    //std::cout<< "M.query_vertex: " << (*it).first <<", ";
+    //std::cout<< "M.data_vertex: " << (*it).second << std::endl;
   }
 
   if(M.size() == q_size){
@@ -248,14 +255,15 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       // initialize M
       M.erase(M.end());
     } else { // 확인용 출력
-      std::cout<<"It is not an Embedding!"<<std::endl;
+      //std::cout<<"It is not an Embedding!"<<std::endl;
+      M.erase(M.end());
     }
   }
   else if (M.size() == 0){
-    std::cout<<"# of candidates: "<<cs.GetCandidateSize(root)<<"\n";
+    //std::cout<<"# of candidates: "<<cs.GetCandidateSize(root)<<"\n";
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
-      std::cout<<"now trying "<<i+1<<"th candidate, vertex "<<v<<std::endl;
+      //std::cout<<"now trying "<<i+1<<"th candidate, vertex "<<v<<std::endl;
       // do M <- (root, v); 
       std::pair<Vertex, Vertex> root_candidate;
       root_candidate.first = root;
@@ -274,7 +282,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       std::cout<<"There are no extendable vertex for vertex "<<u<<std::endl;
     }
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
-    std::cout<<"# of extendable candidates: "<<C_m_.size()<<std::endl;
+    //std::cout<<"# of extendable candidates: "<<C_m_.size()<<std::endl;
 
     bool is_there_branch = false;
     for(size_t j = 0; j < C_m_.size(); ++j){
@@ -294,16 +302,14 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
         is_there_branch = true;
       }
     }
-    if (!is_there_branch){ // 더 갈 데가 없으면 backtrack
-      M.erase(M.end());
-    }
+    M.erase(M.end());
   }  
 }
 
 
 Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
-  std::cout<<"extendable() called.\n";
+  //std::cout<<"extendable() called.\n";
   std::vector <Vertex> extendable_vector;
   std::vector<Vertex> M_first;
   for (auto it = M.begin(); it != M.end(); ++it){
@@ -318,11 +324,11 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   for (auto it = M_first.begin(); it != M_first.end(); ++it){
     extendable_set.erase(*it);
   }
-  std::cout<<"Extendable vertices: ";
+  //std::cout<<"Extendable vertices: ";
   for (auto it = extendable_set.begin(); it != extendable_set.end(); ++it){
-    std::cout<<*it<<" ";
+    //std::cout<<*it<<" ";
   }
-  std::cout<<std::endl;
+  //std::cout<<std::endl;
   // set to vector
   std::copy(extendable_set.begin(), extendable_set.end(), std::back_inserter(extendable_vector));
 
@@ -333,11 +339,11 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     Vertex extendable_vertex = *it;
     // 원래 C_m_value = C_m(u, data, cs).size()인데 오류가 나서 지금은 이렇게 하겠습니다
     size_t C_m_value = cs.GetCandidateSize(extendable_vertex); 
-    std::cout<< "C_m(): " << C_m_value <<"\n";
+    //std::cout<< "C_m(): " << C_m_value <<"\n";
     if (min > C_m_value)
       min_extendable_vertex = extendable_vertex;
   }
-  std::cout<< "extendable() returns: " << min_extendable_vertex <<"\n";
+  //std::cout<< "extendable() returns: " << min_extendable_vertex <<"\n";
   return min_extendable_vertex;
 }
 
