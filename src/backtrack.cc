@@ -246,8 +246,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     if (isEmbedding(M_vector, data, query)){
       printEmbedding(M_vector);
       // initialize M
-      auto last_position = M.end();
-      M.erase(last_position);
+      M.erase(M.end());
     } else { // 확인용 출력
       std::cout<<"It is not an Embedding!"<<std::endl;
     }
@@ -271,8 +270,13 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
   }
   else{
     Vertex u = extendable(data, cs);
+    if(u == 10000){
+      std::cout<<"There are no extendable vertex for vertex "<<u<<std::endl;
+    }
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
     std::cout<<"# of extendable candidates: "<<C_m_.size()<<std::endl;
+
+    bool is_there_branch = false;
     for(size_t j = 0; j < C_m_.size(); ++j){
       Vertex v = C_m_[j];
       if (!visited_cs[v]){
@@ -286,7 +290,12 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
         visited_cs[v] = true;
         backtracking(data, query, cs);
         visited_cs[v] = false;
+
+        is_there_branch = true;
       }
+    }
+    if (!is_there_branch){ // 더 갈 데가 없으면 backtrack
+      M.erase(M.end());
     }
   }  
 }
@@ -302,8 +311,7 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   }
   std::set<Vertex> extendable_set;
   for (auto it = M_first.begin(); it != M_first.end(); ++it){
-    int index = std::distance(M_first.begin(), it);
-    for (auto jt = q_D[index].begin(); jt != q_D[index].end(); ++jt){
+    for (auto jt = q_D[*it].begin(); jt != q_D[*it].end(); ++jt){
       extendable_set.insert(*jt);
     } 
   }
