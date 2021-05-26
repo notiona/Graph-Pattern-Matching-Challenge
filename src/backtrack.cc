@@ -246,6 +246,8 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     if (isEmbedding(M_vector, data, query)){
       printEmbedding(M_vector);
       // initialize M
+      auto last_position = M.end();
+      M.erase(last_position);
     } else { // 확인용 출력
       std::cout<<"It is not an Embedding!"<<std::endl;
     }
@@ -338,19 +340,22 @@ std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateS
   //std::cout<<"C_m() called.\n";
 
   std::vector<Vertex> result;
-  Vertex u_p = q_D_1[u][0];  // 교집합 하기 위해서 맨 첫번째 (i=0)일 때는 미리 구해놓음
-  result = N_u(u, M_dict[u_p], data, cs);
+  // Vertex u_p = q_D_1[u][0];  // 교집합 하기 위해서 맨 첫번째 (i=0)일 때는 미리 구해놓음
+  // result = N_u(u, M_dict[u_p], data, cs);
 
-  for(size_t i = 1; i < q_D_1[u].size(); ++i){
-    u_p = q_D_1[u][i];
-    std::vector<Vertex> N = N_u(u, M_dict[u_p], data, cs);
-    std::vector<Vertex> tmp;
-    std::set_intersection(result.begin(), result.end(),
-                          N.begin(), N.end(),
-                          std::back_inserter(tmp));
-    result = tmp;
+  // for(size_t i = 1; i < q_D_1[u].size(); ++i){
+  //   u_p = q_D_1[u][i];
+  //   std::vector<Vertex> N = N_u(u, M_dict[u_p], data, cs);
+  //   std::vector<Vertex> tmp;
+  //   std::set_intersection(result.begin(), result.end(),
+  //                         N.begin(), N.end(),
+  //                         std::back_inserter(tmp));
+  //   result = tmp;
+  // }
+  // //std::cout<< "C_m() returned.\n";
+  for(size_t i = 0; i < cs.GetCandidateSize(u); i++){
+    result.push_back(cs.GetCandidate(u, i));
   }
-  //std::cout<< "C_m() returned.\n";
   return result;
 }
 
