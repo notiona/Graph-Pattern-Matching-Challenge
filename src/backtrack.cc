@@ -10,7 +10,7 @@ Backtrack::~Backtrack() {}
 // declaration of static M, M_dict, visited_query, visited_cs (해줘야 에러 안 남)
 std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
 std::map<Vertex, Vertex> Backtrack::M_dict;
-std::vector<bool> Backtrack::visited_cs;
+std::map<Vertex, bool> Backtrack::visited_cs;
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
   // std::cout << "t " << query.GetNumVertices() << "\n";
@@ -30,9 +30,13 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const Can
   buildDAG(data, query);
 
   // init visited_cs;
-  for(int i = 0; i < data.GetNumVertices(); ++i){
-    visited_cs.push_back(false);
+  for(Vertex i = 0; i < q_size; i++){
+    for(size_t j = 0; j < cs.GetCandidateSize(i); j++){
+      Vertex candidate_set_vertex = cs.GetCandidate(i, j);
+      visited_cs.insert(std::pair<Vertex, bool>(candidate_set_vertex, false));
+    }
   }
+  //std::cout << "visited_cs.size()"<< visited_cs.size() << "\n";
   backtracking(data, query, cs);
 }
 
@@ -266,7 +270,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     std::cout<<"Full root backtracking complete"<<std::endl;
   }
   else{
-    Vertex u = extendable(data, cs);
+    Vertex u = extendable(u, data, cs);
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
     for(size_t j = 0; j < sizeof(C_m_); ++j){
       Vertex v = C_m_[j];
@@ -287,42 +291,29 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
 }
 
 
-Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
+Vertex Backtrack::extendable(Vertex u, const Graph &data, const CandidateSet &cs){
   std::cout<<"extendable() called.\n";
-  // return a extendable vertex
-  // Condition: vertex should be unvisited
-  std::vector <Vertex> unvisited;
-  std::cout<<"visited_cs.size() "<< visited_cs.size() <<"\n";
-  for(size_t i = 0; i < visited_cs.size(); i++) {
-    if(!visited_cs[i]) {
-      unvisited.push_back(i);
-    }
-  }
-  std::cout<<"unvisited.size() "<< unvisited.size() <<"\n";
-  std::cout<<"unvisited "<<unvisited[0]<<"\n";
-  std::cout<<"unvisited "<<unvisited[1]<<"\n";
-  std::cout<<"unvisited "<<unvisited[2]<<"\n";
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
   // 아래 logic 수정해야
   std::vector <Vertex> extendable_vector;
-  for (auto it = unvisited.begin(); it != unvisited.end(); ++it) {
-    size_t unvisited_vertex = *it;
-    // parent 있는지 확인 위해 q_D_1 필요
-    std::vector<Vertex> M_first;
-    for (auto jt = M.begin(); jt != M.end(); ++jt){
-      M_first.push_back((*jt).first);
-    }
-    int counter = 0;
-    for (Vertex parent : q_D_1[unvisited_vertex]){
-      if(std::find(M_first.begin(), M_first.end(), parent) != M_first.end()) {
-        // M_first contains parent
-        counter++;
-      }
-    }
-    if(counter == q_size)
-      extendable_vector.push_back(unvisited_vertex);
-    std::cout<<"number of extendable vertices: "<<sizeof(extendable_vector) / sizeof(Vertex)<<"\n";
-  }
+  // for (auto it = unvisited.begin(); it != unvisited.end(); ++it) {
+  //   size_t unvisited_vertex = *it;
+  //   // parent 있는지 확인 위해 q_D_1 필요
+  //   std::vector<Vertex> M_first;
+  //   for (auto jt = M.begin(); jt != M.end(); ++jt){
+  //     M_first.push_back((*jt).first);
+  //   }
+  //   int counter = 0;
+  //   for (Vertex parent : q_D_1[unvisited_vertex]){
+  //     if(std::find(M_first.begin(), M_first.end(), parent) != M_first.end()) {
+  //       // M_first contains parent
+  //       counter++;
+  //     }
+  //   }
+  //   if(counter == q_size)
+  //     extendable_vector.push_back(unvisited_vertex);
+  //   std::cout<<"number of extendable vertices: "<<sizeof(extendable_vector) / sizeof(Vertex)<<"\n";
+  // }
   
   //////// exdata, exquery, excandidate 가지고서 돌려봤는데, extendable vertices 6개라고 나옴. query에 노드가 4개뿐인데 어떻게..?
 
