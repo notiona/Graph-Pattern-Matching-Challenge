@@ -253,10 +253,10 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     if (isEmbedding(M_vector, data, query)){
       printEmbedding(M_vector);
       // initialize M
-      M.erase(M.end());
+      M.pop_back();
     } else { // 확인용 출력
       //std::cout<<"It is not an Embedding!"<<std::endl;
-      M.erase(M.end());
+      M.pop_back();
     }
   }
   else if (M.size() == 0){
@@ -302,7 +302,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
         is_there_branch = true;
       }
     }
-    M.erase(M.end());
+    M.pop_back();
   }  
 }
 
