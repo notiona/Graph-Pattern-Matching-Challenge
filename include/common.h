@@ -18,6 +18,9 @@
 #include <queue>
 #include <time.h>
 
+using std::cout;
+using std::endl;
+
 using Vertex = int32_t;
 using Label = int32_t;
 
