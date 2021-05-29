@@ -12,33 +12,43 @@ std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
 std::map<Vertex, Vertex> Backtrack::M_dict;
 std::map<Vertex, bool> Backtrack::visited_cs;
 
-bool verbose = false; // true로 설정하면 확인용 print문 출력
+// 0: print nothing but only embeddings (for submission)
+// 1: + 실행 시간 측정, 기본 정보, 임베딩 개수, 에러 처리 출력
+// 2: + 중간과정 출력
+int verbose = 2;
+
 int num_embedding = 0; // embedding 개수 세기
-int num_not_embeddeing = 0; // check해보니 embedding이 아닌 것의 개수 세기
+int num_not_embedding = 0; // check해보니 embedding이 아닌 것의 개수 세기
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
-  clock_t start = clock();
-  cout<<"start buildDAG...  ";
+  clock_t start;
+  if (verbose >= 1) {
+    start = clock();
+    cout<<"start buildDAG...  ";
+  }
   buildDAG(data, query);
-  cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; start = clock();
+  if (verbose >= 1) cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; start = clock();
 
   // init visited_cs;
-  cout<<"initalize visited_cs...  ";
+  if (verbose >= 1) cout<<"initalize visited_cs...  ";
   for(size_t i = 0; i < q_size; i++){
     for(size_t j = 0; j < cs.GetCandidateSize(i); j++){
       Vertex candidate_set_vertex = cs.GetCandidate(i, j);
       visited_cs.insert(std::pair<Vertex, bool>(candidate_set_vertex, false)); // cs에 중복으로 나오는 건 알아서 걸러짐
     }
   }
-  cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; start = clock();
-
-  cout<<"start backtracking(data, query, cs)"<<endl;
-  cout<<"query size: "<<q_size<<", data size: "<<data.GetNumVertices()<<", cs size: "<<visited_cs.size()<<endl<<endl;
-
+  if (verbose >= 1) {
+    cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; start = clock();
+    cout<<"start backtracking(data, query, cs)"<<endl;
+    cout<<"query size: "<<q_size<<", data size: "<<data.GetNumVertices()<<", cs size: "<<visited_cs.size()<<endl<<endl;
+  }
   backtracking(data, query, cs);
-  cout<<"\nembedding: "<<num_embedding<<endl;
-  cout<<"wrong cases: "<<num_not_embeddeing<<endl;
-  cout<<"program ended: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s (for backtracking)"<<endl;
+  if (verbose >= 1) {
+    cout<<"\nembedding: "<<num_embedding<<endl;
+    cout<<"wrong cases: "<<num_not_embedding<<endl;
+    cout<<"program ended: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s (for backtracking)"<<endl;
+  }
+
 }
 
 /**
@@ -238,7 +248,7 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
  * @return none
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
-  if (verbose){
+  if (verbose >= 2) {
     cout<<"\nM.size(): "<< M.size()<<endl;
   }
   //for (auto it = M.begin(); it != M.end(); ++it) {
@@ -261,16 +271,16 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     if (isEmbedding(M_vector, data, query)){
       printEmbedding(M_vector);
     } else { // 확인용 출력
-      if(verbose){
+      if (verbose >= 1) {
         cout<<"It is not an Embedding!"<<endl;
+        ++num_not_embedding;
       }
-      ++num_embedding;
     }
     M_dict.erase(M.back().first);
     M.pop_back();
   }
   else if (M.size() == 0){
-    if(verbose){
+    if(verbose >= 2) {
       cout<<"query root: "<<root<<endl;
       cout<<"# of candidates of root in CS: "<<cs.GetCandidateSize(root)<<"\n";
     }
@@ -291,11 +301,11 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
   }
   else{
     Vertex u = extendable(data, cs);
-    if (verbose){ // 확인
+    if (verbose >= 2) { // 확인
       cout<<"current vertex: "<<u<<"\n";
     }
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
-    if (verbose){ // 확인
+    if (verbose >=2) { // 확인
       cout<<"extendable candidates: ";
       for (auto it : C_m_){
         cout<<it<<" ";
@@ -356,7 +366,7 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     }
   }
   
-  if (verbose){ // 확인
+  if (verbose >= 2) { // 확인
     cout<<"Extendable vertices: ";
     for (auto iter :extendable_set){
       cout<<iter<<" ";
@@ -381,7 +391,7 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     }
   }
   
-  if (min_extendable_vertex==1000000){
+  if (min_extendable_vertex==1000000 && verbose >= 1){
     cout<<"extendable이 1000000을 반환했습니다. 뭔가 문제가 생겼습니다."<<endl;
   }
   return min_extendable_vertex;
