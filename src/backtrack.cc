@@ -15,22 +15,28 @@ std::map<Vertex, bool> Backtrack::visited_cs;
 // 0: print nothing but only embeddings (for submission)
 // 1: + 실행 시간 측정, 기본 정보, 임베딩 개수, 에러 처리 출력
 // 2: + 중간과정 출력
-int verbose = 2;
+int verbose = 1;
 
 int num_embedding = 0; // embedding 개수 세기
 int num_not_embedding = 0; // check해보니 embedding이 아닌 것의 개수 세기
 
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
-  clock_t start;
+  // Output format
+  std::cout << "t " << query.GetNumVertices() << "\n";
+
+  clock_t start = 0;
   if (verbose >= 1) {
     start = clock();
     cout<<"start buildDAG...  ";
   }
   buildDAG(data, query);
-  if (verbose >= 1) cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; start = clock();
-
+  if (verbose >= 1) {
+    cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; 
+    start = clock();
+  }
   // init visited_cs;
-  if (verbose >= 1) cout<<"initalize visited_cs...  ";
+  if (verbose >= 1) 
+    cout<<"initalize visited_cs...  ";
   for(size_t i = 0; i < q_size; i++){
     for(size_t j = 0; j < cs.GetCandidateSize(i); j++){
       Vertex candidate_set_vertex = cs.GetCandidate(i, j);
@@ -276,7 +282,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
         ++num_not_embedding;
       }
     }
-    M_dict.erase(M.back().first);
+    //M_dict.erase(M.back().first);
     M.pop_back();
   }
   else if (M.size() == 0){
@@ -327,7 +333,7 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
         visited_cs[v] = false;
       }
     }
-    M_dict.erase(M.back().first);
+    //M_dict.erase(M.back().first);
     M.pop_back();
   }  
 }
@@ -383,8 +389,9 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   Vertex min_extendable_vertex = 1000000;
   for (auto extendable_vertex : extendable_vector) {
     // 원래 아래 식인데 문제가 있어서 일단 cs크기 전체로
-    // size_t C_m_value = C_m(u, data, cs).size()인데 오류가 나서 지금은 이렇게 하겠습니다
-    size_t C_m_value = cs.GetCandidateSize(extendable_vertex);
+    // size_t C_m_value = C_m(extendable_vertex, data, cs).size()인데 오류가 나서 지금은 이렇게 하겠습니다
+    //size_t C_m_value = cs.GetCandidateSize(extendable_vertex);
+    size_t C_m_value = C_m(extendable_vertex, data, cs).size();
     //cout<< "C_m("<<extendable_vertex<<"): "<< C_m_value <<"\n";
     if (min > C_m_value){
       min_extendable_vertex = extendable_vertex;
