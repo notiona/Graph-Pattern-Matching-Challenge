@@ -16,7 +16,7 @@ std::map<Vertex, bool> Backtrack::visited_cs;
 // 1: 실행시간, 임베딩 개수(wring case 포함) 출력
 // 2: + 기본 정보, 에러 처리 출력
 // 3: + 중간과정 출력
-int verbose = 1;
+int verbose = 0;
 
 int num_embedding = 0; // embedding 개수 세기
 int num_not_embedding = 0; // check해보니 embedding이 아닌 것의 개수 세기
