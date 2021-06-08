@@ -19,13 +19,14 @@ CandidateSet::CandidateSet(const std::string& filename) {
   fin >> type >> num_query_vertices;
 
   cs_.resize(num_query_vertices);
-
+  cs_size = 0;
   while (fin >> type) {
     if (type == 'c') {
       Vertex id;
       size_t candidate_set_size;
 
       fin >> id >> candidate_set_size;
+      cs_size += candidate_set_size;
 
       cs_[id].resize(candidate_set_size);
 
