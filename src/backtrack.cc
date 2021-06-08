@@ -13,6 +13,13 @@ std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
 std::map<Vertex, Vertex> Backtrack::M_dict;
 std::map<Vertex, bool> Backtrack::visited_cs;
 
+/**
+ * @brief Print all embeddings of query graph in data graph to stdout using backtracking
+ * @param data data graph
+ * @param query query graph
+ * @param cs candidate set
+ * @return None
+ */
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
   
   printf("t %zu\n", query.GetNumVertices()); // Output format
@@ -78,7 +85,7 @@ bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &d
  * @details 메서드의 맨 아래에 만들어진 DAG(adjacency_list 형태)를 출력하는 코드가 주석처리 돼있습니다. 
  * @param G data graph
  * @param q query graph
- * @return none
+ * @return None
  */
 void Backtrack::buildDAG(const Graph &G, const Graph &q){
   // Select root
@@ -150,6 +157,7 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
  * @brief function to get Transpose of a graph taking adjacency
  * @param adj given graph to reverse
  * @param transpose transposed graph
+ * @return None
  * */
 void Backtrack::transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose){
     // traverse the adjacency list of given graph and
@@ -167,7 +175,7 @@ void Backtrack::transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &tr
  * @param G data graph
  * @param q query graph
  * @param u node of query graph
- * @return size of C_ini(u)
+ * @return int
  */
 int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
   int cnt = 0;
@@ -182,7 +190,7 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
 /**
  * @brief Backtrack. See <Algorithm 2> in the paper.
  * @details M, visited[]는 class 변수 (parameter X)
- * @return none
+ * @return None
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
 
@@ -241,6 +249,13 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
   }  
 }
 
+/**
+ * @brief return the extendable vertex of current M, with mininum C_m
+ * @param data data graph
+ * @param cs candidate set
+ * @details M, visited[]는 class 변수 (parameter X)
+ * @return Vertex
+ */
 Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
 
@@ -297,6 +312,7 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
 /**
  * @brief returns C_m(u), set of extendable candidates of u regarding partial embedding M
  * @details see <ch15. graph_pattern_matching> p19.
+ * @return std::vector<Vertex>
  */
 std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateSet &cs){
 
@@ -318,9 +334,10 @@ std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateS
 
 /**
  * @brief N sup(u_p) sub(u)를 구현. (see <ch15. graph_pattern_matching> p19.)
+ * @details return set of vertices v, those adjacent to v_p in G such that v in C(u)
  * @param u vertex in query
  * @param v_p = M(u_p)
- * @return set of vertices v, those adjacent to v_p in G such taht v in C(u)
+ * @return std::vector<Vertex>
  */
 std::vector<Vertex> Backtrack::N_u(Vertex u, Vertex v_p, const Graph &data, const CandidateSet &cs){
   std::vector<Vertex> result;
