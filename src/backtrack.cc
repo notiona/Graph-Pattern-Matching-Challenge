@@ -7,75 +7,39 @@
 
 Backtrack::Backtrack() {}
 Backtrack::~Backtrack() {}
-// declaration of static M, M_dict, visited_query, visited_cs (해줘야 에러 안 남)
+
+// declaration of static M, M_dict, visited_query, visited_cs
 std::vector<std::pair<Vertex, Vertex>> Backtrack::M;
 std::map<Vertex, Vertex> Backtrack::M_dict;
 std::map<Vertex, bool> Backtrack::visited_cs;
 
-// 0: print nothing but only embeddings (for submission)
-// 1: 실행시간, 임베딩 개수(wring case 포함) 출력
-// 2: + 기본 정보, 에러 처리 출력
-// 3: + 중간과정 출력
-int verbose = 0;
-
-int num_embedding = 0; // embedding 개수 세기
-int num_not_embedding = 0; // check해보니 embedding이 아닌 것의 개수 세기
-
 void Backtrack::PrintAllMatches(const Graph &data, const Graph &query, const CandidateSet &cs) {
-  // Output format
-  std::cout << "t " << query.GetNumVertices() << "\n";
+  
+  printf("t %zu\n", query.GetNumVertices()); // Output format
 
-  clock_t start = 0;
-  if (verbose >= 2) {
-    start = clock();
-    cout<<"start buildDAG...  ";
-  }
   buildDAG(data, query);
-  if (verbose >= 2) {
-    cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; 
-    start = clock();
-  }
-  // init visited_cs;
-  if (verbose >= 2) 
-    cout<<"initalize visited_cs...  ";
-  for(size_t i = 0; i < q_size; i++){
+
+  for(size_t i = 0; i < q_size; i++){ // init visited_cs;
     for(size_t j = 0; j < cs.GetCandidateSize(i); j++){
       Vertex candidate_set_vertex = cs.GetCandidate(i, j);
       visited_cs.insert(std::pair<Vertex, bool>(candidate_set_vertex, false)); // cs에 중복으로 나오는 건 알아서 걸러짐
     }
   }
-  if (verbose >= 2) {
-    cout<<"completed: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s"<<endl; start = clock();
-    cout<<"start backtracking(data, query, cs)"<<endl;
-    cout<<"query size: "<<q_size<<", data size: "<<data.GetNumVertices()<<", cs size: "<<visited_cs.size()<<endl<<endl;
-  }
-  backtracking(data, query, cs);
-  if (verbose >= 1) {
-    cout<<"\nembedding: "<<num_embedding<<endl;
-    cout<<"wrong cases: "<<num_not_embedding<<endl;
-    cout<<"program ended: "<<(double) (clock() - start)/CLOCKS_PER_SEC<<"s (for backtracking)"<<endl;
-  }
 
+  backtracking(data, query, cs);
 }
 
 /**
  * @brief Prints embedding to stdout.
- *
  * @param embedding complete embedding.
  * @return None
  */
 void Backtrack::printEmbedding(const std::vector<Vertex> &embedding){
-  std::ofstream outfile;
-  outfile.open("answer.igraph", std::ios_base::app);
-  cout << "a";
-  outfile << "a";
+  printf("a");
   for (int x : embedding){
-    cout << " " << x;
-    outfile << " " << x;
+    printf(" %d",x);
   }
-  cout << "\n";
-  outfile << "\n";
-  outfile.close();
+  printf("\n");
 }
 
 /**
@@ -87,26 +51,6 @@ void Backtrack::printEmbedding(const std::vector<Vertex> &embedding){
  * @return bool
  */
 bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &data, const Graph &query){
-
-  // condition 1: injective
-  std::set<Vertex> s(embedding.begin(), embedding.end()); // may want to use std::unordered_set for performance
-  bool isInjective = s.size() == embedding.size();
-  if (!isInjective){
-    //cout << "Condition 1 Not Satisfied!\n";
-    return false;
-  }
-
-  // condition 2: embedding and data graph should have same labels
-  for (auto it = embedding.begin(); it != embedding.end(); ++it) {
-    int vertex_query = std::distance(embedding.begin(), it);  // equivalent to index of embedding
-    int vertex_data = *it;
-    int label_query = query.GetLabel(vertex_query);
-    int label_data = data.GetLabel(vertex_data);
-    if (label_query != label_data){
-      //cout << "Condition 2 Not Satisfied!\n";
-      return false;
-    }
-  }
 
   // condition 3: if exist edge in query, edge must exist in embedding
   for (auto it = embedding.begin(); it != embedding.end(); ++it) {
@@ -125,6 +69,7 @@ bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &d
       offset++;
     }
   }
+
   return true;
 }
 
@@ -134,7 +79,6 @@ bool Backtrack::isEmbedding(const std::vector<Vertex> &embedding, const Graph &d
  * @param G data graph
  * @param q query graph
  * @return none
- * @author Jinhyeong Kim
  */
 void Backtrack::buildDAG(const Graph &G, const Graph &q){
   // Select root
@@ -157,7 +101,7 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
   root = max_idx;
 
   // Traverse query in BFS order
-  // BFS에서 same level의 경우에 순서를 정하는 것은 아직 따로 구현하지 않았음(논문에는 있지만)
+  // BFS에서 same level의 경우에 순서를 정하는 것은 아직 따로 구현하지 않았음 (논문에는 있지만)
   std::vector<bool> visited_query(q_size);
   visited_query[root] = true;
 
@@ -200,14 +144,13 @@ void Backtrack::buildDAG(const Graph &G, const Graph &q){
 
   // q_D_1 reversal
   transposeDAG(q_D, q_D_1);
-
-  // DAG adjacency list 출력 (확인용)
-  //printDAG(q_D);
-  //printDAG(q_D_1);
 }
   
-// function to get Transpose of a graph taking adjacency
-// list of given graph and that of Transpose graph
+/**
+ * @brief function to get Transpose of a graph taking adjacency
+ * @param adj given graph to reverse
+ * @param transpose transposed graph
+ * */
 void Backtrack::transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &transpose){
     // traverse the adjacency list of given graph and
     // for each edge (u, v) add an edge (v, u) in the
@@ -215,16 +158,6 @@ void Backtrack::transposeDAG(std::vector<Vertex>* &adj, std::vector<Vertex>* &tr
     for (size_t i = 0; i < q_size; i++)
         for (size_t j = 0; j < adj[i].size(); j++)
             transpose[adj[i][j]].push_back(i); 
-}
-
-// function to print adjacency list of a graph
-void Backtrack::printDAG(std::vector<Vertex>* &adj){
-    for (size_t i = 0; i < q_size; i++) {
-        cout << i << "--> ";
-        for (size_t j = 0; j < adj[i].size(); j++)
-            cout << adj[i][j] << "  ";
-        cout << "\n";
-    }
 }
 
 /**
@@ -248,25 +181,12 @@ int Backtrack::C_ini(const Graph &G, const Graph &q, Vertex u){
 
 /**
  * @brief Backtrack. See <Algorithm 2> in the paper.
- * @details 구현 안 한 부분은 주석 처리해놓고서 논문의 pseudo code를 그대로 적었습니다.
-            M, visited[]는 class 변수로 두어서 따로 parameter에 넣지 않았습니다.
- * @param cs CandidateSet 
+ * @details M, visited[]는 class 변수 (parameter X)
  * @return none
  */
 void Backtrack::backtracking(const Graph &data, const Graph &query, const CandidateSet &cs){
-  if (verbose >= 3) {
-    cout<<"\nM.size(): "<< M.size()<<endl;
-  }
-  //for (auto it = M.begin(); it != M.end(); ++it) {
-    //cout<< "M.query_vertex: " << (*it).first <<", ";
-    //cout<< "M.data_vertex: " << (*it).second << endl;
-  //}
 
-  if(M.size() == q_size){
-    // buildDAG과 backtracking 과정에서 isEmbedding의 condition1, condition2가 이미 만족되었다면
-    // isEmbedding(M, query)만으로 판별가능
-    // 지금은 확실한 확인을 위해 backtracking의 인수로 data, query graph 받아와야 할 것 같아요
-    
+  if(M.size() == q_size){    
     // std::vector<std::pair<Vertex, Vertex>> -> vector<Vertex> 형으로 변환
     std::vector <Vertex> M_vector (query.GetNumVertices());
     for (size_t i = 0; i < query.GetNumVertices(); ++i){
@@ -276,26 +196,14 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
     // do printEmbedding()
     if (isEmbedding(M_vector, data, query)){
       printEmbedding(M_vector);
-      ++num_embedding;
-    } else { // 확인용 출력
-      if (verbose >= 1) {
-        ++num_not_embedding;
-        if (verbose >= 2) {
-          cout<<"It is not an Embedding!"<<endl;
-        }
-      }
-    }
+    } 
     //M_dict.erase(M.back().first);
     M.pop_back();
   }
+
   else if (M.size() == 0){
-    if(verbose >= 3) {
-      cout<<"query root: "<<root<<endl;
-      cout<<"# of candidates of root in CS: "<<cs.GetCandidateSize(root)<<"\n";
-    }
     for(size_t i = 0; i < cs.GetCandidateSize(root); ++i){
       Vertex v = cs.GetCandidate(root, i);
-      //cout<<"now trying "<<i+1<<"th candidate, vertex "<<v<<endl;
       // do M <- (root, v); 
       std::pair<Vertex, Vertex> root_candidate;
       root_candidate.first = root;
@@ -308,19 +216,11 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
       visited_cs[v] = false;
     }
   }
+
   else{
     Vertex u = extendable(data, cs);
-    if (verbose >= 3) { // 확인
-      cout<<"current vertex: "<<u<<"\n";
-    }
     std::vector<Vertex> C_m_ = C_m(u, data, cs);
-    if (verbose >=3) { // 확인
-      cout<<"extendable candidates: ";
-      for (auto it : C_m_){
-        cout<<it<<" ";
-      }
-      cout<<"\n";
-    }
+
     for(size_t j = 0; j < C_m_.size(); ++j){
       Vertex v = C_m_[j];
       if (!visited_cs[v]){
@@ -343,13 +243,12 @@ void Backtrack::backtracking(const Graph &data, const Graph &query, const Candid
 
 Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
   // Condition: unvisited query vertex u is extendable if all parents of u are matched in M
-  
-  //cout<<"extendable() called.\n";
 
   std::vector<Vertex> M_first; // query의 vertex 중 M에 매핑된 것들
   for (auto it = M.begin(); it != M.end(); ++it){
     M_first.push_back((*it).first);
   }
+
   // M에 매핑된 query vertex들에 대해서, child의 합집합을 구한다
   std::set<Vertex> child = std::set<Vertex>();
   for (auto iter : M_first){
@@ -357,9 +256,12 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
       child.insert(u);
     }
   }
-  for (auto iter : M_first){ //이미 M 안에 있는 것은 뺀다
+  
+  //이미 M 안에 있는 것은 뺀다
+  for (auto iter : M_first){ 
     child.erase(iter);
   }
+
   // child에 있는 애들 중에서 parent가 모두 M에 mapping돼있는 애들만 걸러서 extendable_set에 넣는다
   std::set<Vertex> extendable_set = std::set<Vertex>();
   for (auto child_ : child){
@@ -375,46 +277,31 @@ Vertex Backtrack::extendable(const Graph &data, const CandidateSet &cs){
     }
   }
   
-  if (verbose >= 3) { // 확인
-    cout<<"Extendable vertices: ";
-    for (auto iter :extendable_set){
-      cout<<iter<<" ";
-    }
-    cout<<endl;
-  }
-  
   // set to vector
   std::vector <Vertex> extendable_vector;
   std::copy(extendable_set.begin(), extendable_set.end(), std::back_inserter(extendable_vector));
 
   // extendable vertex 중 |C_m(u)|가 최소인 vertex 선택
-  size_t min = 1000000;
-  Vertex min_extendable_vertex = 1000000;
+  size_t min = 100000000;
+  Vertex min_extendable_vertex = 100000000;
   for (auto extendable_vertex : extendable_vector) {
-    // 원래 아래 식인데 문제가 있어서 일단 cs크기 전체로
-    // size_t C_m_value = C_m(extendable_vertex, data, cs).size()인데 오류가 나서 지금은 이렇게 하겠습니다
-    //size_t C_m_value = cs.GetCandidateSize(extendable_vertex);
     size_t C_m_value = C_m(extendable_vertex, data, cs).size();
-    //cout<< "C_m("<<extendable_vertex<<"): "<< C_m_value <<"\n";
     if (min > C_m_value){
       min_extendable_vertex = extendable_vertex;
     }
   }
   
-  if (min_extendable_vertex==1000000 && verbose >= 1){
-    cout<<"extendable이 1000000을 반환했습니다. 뭔가 문제가 생겼습니다."<<endl;
-  }
   return min_extendable_vertex;
 }
 
+/**
+ * @brief returns C_m(u), set of extendable candidates of u regarding partial embedding M
+ * @details see <ch15. graph_pattern_matching> p19.
+ */
 std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateSet &cs){
-  // return C_m(u), set of extendable candidates of u regarding partial embedding M
-  // see <ch15. graph_pattern_matching> p19.
-  // Vertex들의 set을 반환
-  //cout<<"C_m() called.\n";
 
   std::vector<Vertex> result;
-  Vertex u_p = q_D_1[u][0];  // 교집합 하기 위해서 맨 첫번째 (i=0)일 때는 미리 구해놓음
+  Vertex u_p = q_D_1[u][0];  // 반복적으로 intersection하기 위해서 맨 첫번째 (i=0)일 때는 미리 구해놓음
   result = N_u(u, M_dict[u_p], data, cs);
 
   for(size_t i = 1; i < q_D_1[u].size(); ++i){
@@ -436,7 +323,6 @@ std::vector<Vertex> Backtrack::C_m(Vertex u, const Graph &data, const CandidateS
  * @return set of vertices v, those adjacent to v_p in G such taht v in C(u)
  */
 std::vector<Vertex> Backtrack::N_u(Vertex u, Vertex v_p, const Graph &data, const CandidateSet &cs){
-  //cout<<"N_u() called.\n";
   std::vector<Vertex> result;
   for(size_t i = 0; i < cs.GetCandidateSize(u); ++i){
     Vertex v =cs.GetCandidate(u, i);
@@ -444,7 +330,6 @@ std::vector<Vertex> Backtrack::N_u(Vertex u, Vertex v_p, const Graph &data, cons
       result.push_back(v);
     }
   }
-  std::sort(result.begin(), result.end()); // intersection을 위해 sorting해놓음
-  //cout<<"N_u() returned.\n";
+  std::sort(result.begin(), result.end()); // intersection 작업을 위해 sorting해놓음
   return result;
 }
